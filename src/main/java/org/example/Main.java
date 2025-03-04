@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.InvocationTargetException;
 
 public class Main extends JFrame {
     public static void main(String[] args) {
@@ -18,37 +19,45 @@ public class Main extends JFrame {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_W: {
                             Shape shape = graphicPanel.getShapeOval();
-                            shape.setY(shape.getY() - 2);
+                            shape.setY(shape.getY() - 3);
                             frame.repaint();
                             break;
                         }
                         case KeyEvent.VK_S: {
                             Shape shape = graphicPanel.getShapeOval();
-                            shape.setY(shape.getY() + 2);
+                            shape.setY(shape.getY() + 3);
                             frame.repaint();
                             break;
                         }
                         case KeyEvent.VK_A: {
                             Shape shape = graphicPanel.getShapeOval();
-                            shape.setX(shape.getX() - 2);
+                            shape.setX(shape.getX() - 3);
                             frame.repaint();
                             break;
                         }
                         case KeyEvent.VK_D: {
                             Shape shape = graphicPanel.getShapeOval();
-                            shape.setX(shape.getX() + 2);
+                            shape.setX(shape.getX() + 3);
                             frame.repaint();
                             break;
                         }
                         case KeyEvent.VK_E: {
-                            Shape shape = graphicPanel.fire();
-                                shape.setX(shape.getX() + 1);
-                                graphicPanel.repaint();
-                            try {
-                                Thread.sleep(1);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
+                            Shape bullet = graphicPanel.fire();
+                            Shape shape = graphicPanel.getShapeOval();
+                            new Thread(() -> {
+                                shape.setX(shape.getX() - 3);
+                                while (bullet.getX() < frame.getWidth()) {
+                                    bullet.setX(bullet.getX() + 3);
+                                    try {
+                                        SwingUtilities.invokeAndWait(graphicPanel::repaint);
+                                        Thread.sleep(1);
+                                    } catch (InterruptedException | InvocationTargetException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                }
+
+                                graphicPanel.removeBullet(bullet);
+                            }).start();
                         }
                         default:
                             break;
@@ -57,13 +66,13 @@ public class Main extends JFrame {
             });
             frame.add(graphicPanel);
             frame.pack();
-            frame.setSize(800, 600);
+            frame.setSize(900, 600);
             frame.setBackground(Color.white);
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
             Shape shape = graphicPanel.getShapeOval();
-            shape.setX(frame.getWidth() / 2);
-            shape.setY(frame.getHeight() / 2);
+            shape.setX(200);
+            shape.setY(200);
             shape.setSize(100);
 
             frame.setVisible(true);

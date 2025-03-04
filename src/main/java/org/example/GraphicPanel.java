@@ -2,6 +2,7 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GraphicPanel extends JPanel {
 
@@ -9,20 +10,20 @@ public class GraphicPanel extends JPanel {
         return shapeOval;
     }
 
-    public Shape fire(){
+    public Shape fire() {
         Shape bullet = new Shape();
         bullet.setX(shapeWhiteOval.getX());
         bullet.setY(shapeWhiteOval.getY());
         bullet.setSize(shapeWhiteOval.getSize());
-        this.bullet = bullet;
-        return this.bullet;
+        this.bullets.add(bullet);
+        return bullet;
     }
 
     Shape shapeOval = new Shape();
     Shape shapeSquare = new Shape();
     Shape shapeWhiteOval = new Shape();
 
-    Shape bullet;
+    java.util.List<Shape> bullets = new CopyOnWriteArrayList<>();
     int offset = 10;
 
     @Override
@@ -33,7 +34,7 @@ public class GraphicPanel extends JPanel {
         shapeSquare.setY(shapeOval.getY() + shapeOval.getSize() / 4);
         shapeSquare.setSize(shapeOval.getSize() / 2);
 
-        shapeWhiteOval.setX(shapeSquare.getX() + shapeSquare.getSize()/2);
+        shapeWhiteOval.setX(shapeSquare.getX() + shapeSquare.getSize() / 2);
         shapeWhiteOval.setY(shapeSquare.getY());
         shapeWhiteOval.setSize(shapeSquare.getSize());
 
@@ -46,11 +47,15 @@ public class GraphicPanel extends JPanel {
         g.setColor(Color.red);
         g.fillOval(shapeOval.getX(), shapeOval.getY(), shapeOval.getSize(), shapeOval.getSize());
 
-        if(bullet != null){
-            g.setColor(Color.red);
-            g.fillOval(bullet.getX(), bullet.getY(), bullet.getSize(), bullet.getSize());
+        if (bullets != null && !bullets.isEmpty()) {
+            g.setColor(Color.green);
+            for (Shape bullet : bullets)
+                g.fillOval(bullet.getX(), bullet.getY(), bullet.getSize(), bullet.getSize());
         }
     }
 
 
+    public void removeBullet(Shape shape) {
+        bullets.remove(shape);
+    }
 }
