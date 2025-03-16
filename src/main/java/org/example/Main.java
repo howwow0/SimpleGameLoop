@@ -1,81 +1,63 @@
 package org.example;
 
+import org.example.engine.GameLoop;
+import org.example.engine.GameObject;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Main extends JFrame {
+public class Main {
+    private static GameLoop gameLoop;
+
     public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(() -> {
-            Main frame = new Main();
-            GraphicPanel graphicPanel = new GraphicPanel();
-            graphicPanel.setBackground(Color.white);
+        CopyOnWriteArrayList<GameObject> gameObjects = new CopyOnWriteArrayList<>();
 
-            frame.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    switch (e.getKeyCode()) {
-                        case KeyEvent.VK_W: {
-                            Shape shape = graphicPanel.getShapeOval();
-                            shape.setY(shape.getY() - 3);
-                            frame.repaint();
-                            break;
-                        }
-                        case KeyEvent.VK_S: {
-                            Shape shape = graphicPanel.getShapeOval();
-                            shape.setY(shape.getY() + 3);
-                            frame.repaint();
-                            break;
-                        }
-                        case KeyEvent.VK_A: {
-                            Shape shape = graphicPanel.getShapeOval();
-                            shape.setX(shape.getX() - 3);
-                            frame.repaint();
-                            break;
-                        }
-                        case KeyEvent.VK_D: {
-                            Shape shape = graphicPanel.getShapeOval();
-                            shape.setX(shape.getX() + 3);
-                            frame.repaint();
-                            break;
-                        }
-                        case KeyEvent.VK_E: {
-                            Shape bullet = graphicPanel.fire();
-                            Shape shape = graphicPanel.getShapeOval();
-                            new Thread(() -> {
-                                shape.setX(shape.getX() - 3);
-                                while (bullet.getX() < frame.getWidth()) {
-                                    bullet.setX(bullet.getX() + 3);
-                                    try {
-                                        SwingUtilities.invokeAndWait(graphicPanel::repaint);
-                                        Thread.sleep(1);
-                                    } catch (InterruptedException | InvocationTargetException ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                }
+        JFrame frame = new JFrame("Moving Shape with Debug Info");
+        JPanel panel = getJPanel(gameObjects);
+        frame.add(panel);
+        frame.setSize(800, 600);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
 
-                                graphicPanel.removeBullet(bullet);
-                            }).start();
-                        }
-                        default:
-                            break;
-                    }
+        CustomShape movingShape = new CustomShape(100, 100, 100, 100, 1, 1);
+        gameObjects.add(movingShape);
+
+        gameLoop = new GameLoop() {
+            @Override
+            protected void update() {
+                for (GameObject obj : gameObjects) {
+                    obj.update(panel, panel.getGraphics());
                 }
-            });
-            frame.add(graphicPanel);
-            frame.pack();
-            frame.setSize(900, 600);
-            frame.setBackground(Color.white);
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            }
 
-            Shape shape = graphicPanel.getShapeOval();
-            shape.setX(200);
-            shape.setY(200);
-            shape.setSize(100);
+            @Override
+            protected void render() {
+                panel.repaint();
+            }
+        };
 
-            frame.setVisible(true);
-        });
+        // Запускаем игровой цикл
+        gameLoop.start();
+    }
+
+    private static JPanel getJPanel(CopyOnWriteArrayList<GameObject> gameObjects) {
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // Отрисовка всех объектов
+                for (GameObject obj : gameObjects) {
+                    obj.draw(this, g);
+                }
+
+                // Отрисовка служебной информации
+                g.setColor(Color.BLACK);
+                g.drawString("FPS: " + gameLoop.getCurrentFPS(), 10, 20);
+                g.drawString("Objects: " + gameObjects.size(), 10, 40);
+            }
+        };
+        panel.setBackground(Color.WHITE);
+        return panel;
     }
 }
