@@ -7,10 +7,10 @@ import java.awt.*;
 
 public class CustomShape extends GameObject {
 
-    private int velocityX;
-    private int velocityY;
+    private double velocityX;
+    private double  velocityY;
 
-    public CustomShape(int x, int y, int width, int height, int velocityX, int velocityY) {
+    public CustomShape(int x, int y, int width, int height, double velocityX, double velocityY) {
         super(x, y, width, height);
         this.velocityX = velocityX;
         this.velocityY = velocityY;
@@ -18,8 +18,8 @@ public class CustomShape extends GameObject {
 
     @Override
     public void update(JPanel panel, Graphics g) {
-        x += velocityX;
-        y += velocityY;
+        x += (int) velocityX;
+        y += (int) velocityY;
 
         if (x <= 0 || x + width >= panel.getWidth()) {
             velocityX = -velocityX;
